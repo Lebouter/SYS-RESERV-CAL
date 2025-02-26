@@ -20,6 +20,7 @@ session_start();
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item"><a class="nav-link" href="appointments.php">Mes Rendez-vous</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Déconnexion</a></li>
+                    <li class="nav-item"><a class="nav-link" href="modif.php">Modifier le compte</a></li>
                 <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
