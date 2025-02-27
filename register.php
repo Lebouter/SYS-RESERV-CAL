@@ -1,13 +1,19 @@
 <?php
 
+session_start();
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'db.php';
 require 'vendor/autoload.php';
+require 'functions.php';
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Erreur de validation CSRF.");
+    }
 
     $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
@@ -141,6 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="password" name="password" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary">S'inscrire</button>
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     </form>
 </div>
 </body>

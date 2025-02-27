@@ -1,6 +1,8 @@
 <?php
 session_start();
 require 'db.php';
+require 'functions.php';
+
 
 // Vérification si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
@@ -17,9 +19,9 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Vérification de la disponibilité d'un créneau horaire
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-
-    if (isset($_POST['cancel_appointment'])) {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Erreur de validation CSRF.");
+    }else if (isset($_POST['cancel_appointment'])) {
         // Annuler le rendez-vous
         $appointment_id = $_POST['appointment_id'];
         $stmt = $conn->prepare("DELETE FROM appointments WHERE id = ? AND user_id = ?");
@@ -62,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
 
 ?>
 
@@ -110,6 +113,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="datetime-local" class="form-control" name="appointment_date" id="appointment_date" step="1800" required>
         </div>
         <button type="submit" class="btn btn-primary">Prendre Rendez-vous</button>
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     </form>
 
     <h3 class="mt-5">Mes Rendez-vous</h3>
@@ -123,6 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <form method="POST" action="appointments.php" class="d-inline">
                         <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
                         <button type="submit" name="cancel_appointment" class="btn btn-danger btn-sm">Annuler</button>
+                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                     </form>
                 </li>
             <?php endforeach; ?>

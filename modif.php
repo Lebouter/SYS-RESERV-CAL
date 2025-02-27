@@ -8,6 +8,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'db.php';
 require 'vendor/autoload.php'; // Charger PHPMailer
+require 'functions.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -20,6 +21,10 @@ $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Erreur de validation CSRF.");
+    }
+    
     $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
     $birth_date = $_POST['birth_date'];
@@ -28,8 +33,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
 
+    
+
     // Vérification si l'email a changé
     $email_changed = $user['email'] != $email;
+
+    if ($email != $user['email']) {
+        $check_email = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+        $check_email->execute([$email, $user_id]);
+        
+        if ($check_email->fetch()) {
+            echo "Cet email est déjà utilisé par un autre utilisateur. Veuillez en choisir un autre.";
+            header("refresh:2;url=modif.php");
+            exit();
+        }
+    }
 
     if ($password) {
         $stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, birth_date = ?, address = ?, phone = ?, email = ?, password = ? WHERE id = ?");
@@ -154,6 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="password" name="password" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     </form>
 </div>
 </body>

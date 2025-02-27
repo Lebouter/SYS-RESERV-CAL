@@ -1,8 +1,13 @@
 <?php
 require 'db.php';
 session_start();
+require 'functions.php';
+    
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Erreur de validation CSRF.");
+    }
     $email = $_POST['email'];
     $password = $_POST['password'];
 
@@ -58,6 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="password" name="password" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary">Se connecter</button>
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     </form>
 </div>
 </body>

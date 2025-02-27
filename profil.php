@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'db.php';
+require 'functions.php';
 
 // Vérification si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
@@ -8,24 +9,32 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// Suppression du compte
-if (isset($_POST['delete_account'])) {
-    // Suppression des données de l'utilisateur
-    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            die("Erreur de validation CSRF.");
+        }
+    
 
-    // Suppression des rendez-vous associés
-    $stmt = $conn->prepare("DELETE FROM appointments WHERE user_id = ?");
-    $stmt->execute([$user_id]);
+    // Suppression du compte
+    if (isset($_POST['delete_account'])) {
+        // Suppression des données de l'utilisateur
+        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
 
-    session_destroy();
-    header("Location: index.php");
-    exit();
+        // Suppression des rendez-vous associés
+        $stmt = $conn->prepare("DELETE FROM appointments WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+
+        session_destroy();
+        header("Location: index.php");
+        exit();
+    }
 }
 ?>
 
@@ -76,6 +85,7 @@ if (isset($_POST['delete_account'])) {
     <!-- Formulaire pour supprimer le compte -->
     <form method="POST" action="profil.php" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');">
         <button type="submit" name="delete_account" class="btn btn-danger">Supprimer mon compte</button>
+        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     </form>
 </div>
 
