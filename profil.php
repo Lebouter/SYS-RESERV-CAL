@@ -44,7 +44,6 @@ if (isset($_POST['delete_account'])) {
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="appointments.php">Mes Rendez-vous</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Déconnexion</a></li>                    
                 <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
