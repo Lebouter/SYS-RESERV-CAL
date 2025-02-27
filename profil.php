@@ -23,13 +23,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Suppression du compte
     if (isset($_POST['delete_account'])) {
-        // Suppression des données de l'utilisateur
-        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
 
         // Suppression des rendez-vous associés
         $stmt = $conn->prepare("DELETE FROM appointments WHERE user_id = ?");
         $stmt->execute([$user_id]);
+
+
+        // Suppression des données de l'utilisateur
+        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
+
 
         session_destroy();
         header("Location: index.php");
@@ -50,14 +53,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.php">Système de Réservation</a>
-        <div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="logout.php">Déconnexion</a></li>                    
+                    <li class="nav-item"><a class="nav-link active" href="profil.php">Mon Profil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="appointments.php">Mes Rendez-vous</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.php">Déconnexion</a></li>
                 <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
                 <?php endif; ?>
+                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
             </ul>
         </div>
     </div>

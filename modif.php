@@ -126,8 +126,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.php">Système de Réservation</a>
-        <div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item"><a class="nav-link" href="profil.php">Mon Profil</a></li>
                     <li class="nav-item"><a class="nav-link" href="appointments.php">Mes Rendez-vous</a></li>
@@ -136,6 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
                 <?php endif; ?>
+                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
             </ul>
         </div>
     </div>
