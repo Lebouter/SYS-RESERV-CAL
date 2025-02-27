@@ -1,6 +1,13 @@
 <?php
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'db.php';
+require 'vendor/autoload.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    require 'db.php';
+    
 
     $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
@@ -28,16 +35,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare("INSERT INTO email_verification (user_id, verification_code) VALUES (?, ?)");
         $stmt->execute([$user_id, $verification_code]);
 
+        // Création du lien de vérification
         $verification_link = "http://localhost/SYS-RESERV-CAL/verify.php?code=" . $verification_code;
-        $subject = "Vérification de votre email";
-        $message = "Cliquez sur ce lien pour vérifier votre compte : " . $verification_link;
-        $headers = "From: no-reply@votre-site.com";
 
-        if (mail($email, $subject, $message, $headers)) {
-            echo "Email envoyé avec succès !";
-        } else {
-            echo "Échec de l'envoi de l'email.";
+        // Envoi de l'email avec PHPMailer
+        $mail = new PHPMailer(true);
+
+        try {
+            // Configuration SMTP
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com'; // Outlook : smtp.office365.com
+            $mail->SMTPAuth = true;
+            $mail->Username = 'nicolas.blanchard.nicolas@gmail.com'; // Ton email
+            $mail->Password = 'pepl najs jkpe rwzr'; // Mot de passe ou App Password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            // Expéditeur et destinataire
+            $mail->setFrom('ton_email@gmail.com', 'Verification mail');
+            $mail->addAddress($email);
+
+            // Contenu de l'email
+            $mail->isHTML(true);
+            $mail->Subject = 'Verification de votre email';
+            $mail->Body = "Bonjour,<br><br>Merci de vous être inscrit !<br>
+                           Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :<br>
+                           <a href='$verification_link'>$verification_link</a><br><br>
+                           Cordialement, <br> L'équipe du site.";
+            $mail->AltBody = "Merci de vous être inscrit ! Veuillez vérifier votre email en cliquant sur ce lien : $verification_link";
+
+            // Envoi de l'email
+            if ($mail->send()) {
+                echo "Un email de vérification a été envoyé à votre adresse.";
+            } else {
+                echo "Erreur lors de l'envoi de l'email.";
+            }
+        } catch (Exception $e) {
+            echo "Erreur lors de l'envoi de l'email : {$mail->ErrorInfo}";
         }
+
     } else {
         echo "Erreur lors de l'inscription.";
     }

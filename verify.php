@@ -16,7 +16,10 @@ if (isset($_GET['code'])) {
         $stmt = $conn->prepare("DELETE FROM email_verification WHERE verification_code = ?");
         $stmt->execute([$code]);
 
-        echo "Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.";
+        echo "Votre email a été vérifié avec succès ! Vous allez être rediriger pour vous connecter";
+        header("refresh:2;url=login.php");
+        exit();
+
     } else {
         echo "Lien de vérification invalide.";
     }
