@@ -1,6 +1,13 @@
 <?php
 session_start();
+
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+
 require 'db.php';
+require 'vendor/autoload.php'; // Charger PHPMailer
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -19,9 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $address = $_POST['address'];
     $phone = $_POST['phone'];
     $email = $_POST['email'];
+    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
 
-    if (!empty($_POST['password'])) {
-        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    // Vérification si l'email a changé
+    $email_changed = $user['email'] != $email;
+
+    if ($password) {
         $stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, birth_date = ?, address = ?, phone = ?, email = ?, password = ? WHERE id = ?");
         $success = $stmt->execute([$first_name, $last_name, $birth_date, $address, $phone, $email, $password, $user_id]);
     } else {
@@ -31,6 +41,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($success) {
         echo "Mise à jour réussie!";
+
+        // Si l'email a changé, envoyer un email de vérification
+        if ($email_changed) {
+            // Générer un code de vérification unique
+            $verification_code = md5(uniqid(rand(), true));
+
+            // Insérer le code de vérification dans la base de données
+            $stmt = $conn->prepare("INSERT INTO email_verification (user_id, verification_code) VALUES (?, ?)");
+            $stmt->execute([$user_id, $verification_code]);
+
+            // Créer un lien de vérification
+            $verification_link = "http://localhost/SYS-RESERV-CAL/verify.php?code=" . $verification_code;
+
+            // Envoi de l'email avec PHPMailer
+            $mail = new PHPMailer(true);
+
+            try {
+                // Configuration SMTP
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com'; // Outlook : smtp.office365.com
+                $mail->SMTPAuth = true;
+                $mail->Username = 'nicolas.blanchard.nicolas@gmail.com'; // Ton email
+                $mail->Password = 'pepl najs jkpe rwzr'; // Mot de passe ou App Password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+
+                // Expéditeur et destinataire
+                $mail->setFrom('ton_email@gmail.com', 'Verification mail');
+                $mail->addAddress($email);
+
+                // Contenu de l'email
+                $mail->isHTML(true);
+                $mail->Subject = 'Verification de votre email';
+                $mail->Body = "Bonjour,<br><br>Nous avons détecté un changement d'email sur votre compte.<br>
+                               Veuillez cliquer sur le lien ci-dessous pour vérifier votre nouvelle adresse email :<br>
+                               <a href='$verification_link'>$verification_link</a><br><br>
+                               Cordialement, <br> L'équipe du site.";
+                $mail->AltBody = "Nous avons détecté un changement d'email. Veuillez vérifier votre email en cliquant sur ce lien : $verification_link";
+
+                // Envoi de l'email
+                if ($mail->send()) {
+                    echo "Un email de vérification a été envoyé à votre nouvelle adresse.";
+                } else {
+                    echo "Erreur lors de l'envoi de l'email de vérification.";
+                }
+            } catch (Exception $e) {
+                echo "Erreur lors de l'envoi de l'email : {$mail->ErrorInfo}";
+            }
+        }
     } else {
         echo "Erreur lors de la mise à jour.";
     }
