@@ -14,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user['is_verified'] == 1) {
             $_SESSION['user_id'] = $user['id'];
             echo "Connexion réussie!";
+            header("refresh:2;url=profil.php");
         } else {
             echo "Veuillez vérifier votre adresse email avant de vous connecter.";
         }
@@ -38,14 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <a class="navbar-brand" href="index.php">Système de Réservation</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="appointments.php">Mes Rendez-vous</a></li>
-                    <li class="nav-item"><a class="nav-link" href="logout.php">Déconnexion</a></li>                    
-                    <li class="nav-item"><a class="nav-link" href="modif.php">Modifier le compte</a></li>
-                <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="register.php">Inscription</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Connexion</a></li>
-                <?php endif; ?>
             </ul>
         </div>
     </div>
