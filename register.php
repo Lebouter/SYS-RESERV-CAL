@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->execute([$user_id, $verification_code]);
 
         // Création du lien de vérification
-        $verification_link = "http://localhost/SYS-RESERV-CAL/verify.php?code=" . $verification_code;
+        $verification_link = "https://sys-reserv-cal.alwaysdata.net/verify.php?code=" . $verification_code;
 
         // Envoi de l'email avec PHPMailer
         $mail = new PHPMailer(true);
